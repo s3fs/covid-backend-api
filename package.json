@@ -1,0 +1,25 @@
+{
+  "name": "covidback",
+  "version": "1.0.0",
+  "description": "backend for fetching and wrapping data from an official CSSEGI repository",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "backend",
+    "covid"
+  ],
+  "author": "s3fs",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.0",
+    "csvtojson": "^2.0.10",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.6"
+  }
+}
