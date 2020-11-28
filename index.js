@@ -1,12 +1,12 @@
 console.log('Hi worlda .. !')
 
 const express = require('express')
-const cors = require('cors')
 const axios = require('axios')
 const csv = require('csvtojson')
 
 const url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
 let arr2 = []
+let obj = {}
 
 axios
     .get(url)
@@ -26,10 +26,18 @@ axios
         
                 const dateCheck = new RegExp(`${date.getMonth() + 1}/(${date.getDate()}|${date.getDate() - 1}|${date.getDate() - 2}|${date.getDate() - 3})/${year}`)
 
-                //impressive...
-                const filteredByKey = Object.fromEntries(Object.entries(i).filter(([key, value]) => key === 'Country/Region' || key ==='Province/State' || dateCheck.test(key)))
+                obj = {
+                    country: i['Country/Region'],
+                    province: i['Province/State'],
+                    cases:
+                        Object.entries(i).filter(key => dateCheck.test(key)).map(([ key, val ]) => obj = {
+                            [key]: val
+                        }) 
+                }
+
+                arr2.push(obj)
                 
-                arr2.push(filteredByKey)
+                obj = {}
             })
         }) 
     })
@@ -39,12 +47,14 @@ const app = express()
 
 app.get('/', (req, res) => {
     res.send(
-        '<h1>Hello world!</h1>'
+        `<h1>Hello world!</h1>
+        <p>The api is at ./api/entries</p>
+        `
     )
 })
 
 app.get('/api/entries', (req, res) => {
-    res.send(arr2)
+    res.json(arr2)
 })
 
 const unknownEndpoint = (req, res) => {
