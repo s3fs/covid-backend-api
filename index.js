@@ -14,7 +14,7 @@ let jsondata
 
 const dateFn = (i) => {
     if (!i) {
-        return (`(${dayjs().format('MM\/DD\/YY')}|${dayjs().subtract(1, 'day').format('MM\/DD\/YY')}|${dayjs().subtract(2, 'day').format('MM\/DD\/YY')}|${dayjs().subtract(3, 'day').format('MM\/DD\/YY')})`)
+        return ([dayjs().format('M/D/YY'), dayjs().subtract(1, 'day').format('M/D/YY'), dayjs().subtract(2, 'day').format('M/D/YY'), dayjs().subtract(3, 'day').format('M/D/YY')])
     } else if (i) {
         i = i.split('_')
 
@@ -23,18 +23,16 @@ const dateFn = (i) => {
         let lastDate = dayjs(i[1])
 
         while (currDate.isBefore(lastDate)) {
-            dates.push(currDate.format('MM\/DD\/YY'))
+            dates.push(currDate.format('M/D/YY'))
             currDate = currDate.add(1, 'day')
         }
-        console.log('dates', dates)
         return dates
     }
 }
-console.log(dateFn())
-console.log(dayjs().toString())
+
 
 const objMake = (a, e) => {
-    const dateCheck = new RegExp(`${dateFn(e)}`)
+    const dateCheck = new RegExp(dateFn(e).join('|'))
 
                 obj = {
                     country: a['Country/Region'],
@@ -78,8 +76,6 @@ app.get('/', (req, res) => {
     )
 })
 
-//okay, so the issue...
-
 app.get('/api/entries', async (req, res) => {
 
     await getterFn()
@@ -89,7 +85,6 @@ app.get('/api/entries', async (req, res) => {
 })
 
 app.get('/api/entries/:id', async (req, res) => {
-    console.log(req.params.id)
     await getterFn()
         .then(() => jsondata.map(i => objMake(i, req.params.id)))
         .then(() => res.json(arr2))
