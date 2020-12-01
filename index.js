@@ -37,6 +37,7 @@ const objMake = (a, e) => {
                 obj = {
                     country: a['Country/Region'],
                     province: a['Province/State'],
+                    imp: /Russia|US|Germany|Canada/.test(a['Country/Region']) ? true : false,
                     cases:
                         Object.entries(a).filter(key => dateCheck.test(key)).map(([ key, val ]) => obj = {
                             [key]: val
