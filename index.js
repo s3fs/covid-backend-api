@@ -1,19 +1,18 @@
-console.log('Hi worlda .. !')
+console.log('Initializing...')
 
 const express = require('express')
 const axios = require('axios')
 const csv = require('csvtojson')
 const dayjs = require('dayjs')
+const app = express()
 
 const url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
 let arr2 = []
 let obj = {}
 let jsondata
 
-//console.log(dayjs().format('DD/MM/YY'), dayjs().subtract(1, 'day').format('DD/MM/YY'))
-
 const dateFn = (i) => {
-    if (!i) {
+    if (i === null) {
         return ([dayjs().format('M/D/YY'), dayjs().subtract(1, 'day').format('M/D/YY'), dayjs().subtract(2, 'day').format('M/D/YY'), dayjs().subtract(3, 'day').format('M/D/YY')])
     } else if (i) {
         i = i.split('_')
@@ -26,6 +25,7 @@ const dateFn = (i) => {
             dates.push(currDate.format('M/D/YY'))
             currDate = currDate.add(1, 'day')
         }
+
         return dates
     }
 }
@@ -33,19 +33,20 @@ const dateFn = (i) => {
 
 const objMake = (a, e) => {
     const dateCheck = new RegExp(dateFn(e).join('|'))
-
                 obj = {
                     country: a['Country/Region'],
                     province: a['Province/State'],
                     imp: /Russia|US|Germany|Canada/.test(a['Country/Region']) ? true : false,
                     cases:
-                        Object.entries(a).filter(key => dateCheck.test(key)).map(([ key, val ]) => obj = {
-                            [key]: val
-                        }) 
+                        Object.entries(a).filter(key => dateCheck.test(key)).map(([ key, val ]) => y = {
+                            [key]: Number(val)
+                        })
                 }
 
+                obj.cases.sort((a, b) => Object.values(a) > Object.values(b) ? obj.status = 'rising' : Object.values(a) < Object.values(b) ? obj.status = 'falling' : obj.status = 'stable')
+
                 arr2.push(obj)
-                
+           
                 obj = {}
 }
 
@@ -53,42 +54,43 @@ const getterFn = async () => {
     axios
     .get(url)
     .then(r => {
-        let data = r.data
-
+        arr2 = []
         csv({
             output: "json"
         })
-        .fromString(data)
-        .then(r => { 
-            jsondata = r
-        }) 
+        .fromString(r.data)
+        .then(r => jsondata = r)
+        .catch((e) => console.log(`${e} __err csv`)) 
     })
+    .catch((e) => console.log(`${e} __err fetch`))
 }
 
-getterFn()
-
-const app = express()
 
 app.get('/', (req, res) => {
     res.send(
         `<h1>Hello world!</h1>
-        <p>The api is at ./api/entries</p>
+        <p>This is a COVID-19 status API</p>
         `
     )
 })
 
-app.get('/api/entries', async (req, res) => {
-
-    await getterFn()
-        .then(() => jsondata.map(i => objMake(i)))
-        .then(() => res.json(arr2))
+app.get('/api/entries', (req, res) => {
+    getterFn()
+        .then(() => {
+            jsondata.map(i => objMake(i, null))
+            res.json(arr2)
+            res.end()
+        })
         .catch(e => res.status(404).send('The content is being prepared or under maintenance. Try again in a moment.'))
 })
 
-app.get('/api/entries/:id', async (req, res) => {
-    await getterFn()
-        .then(() => jsondata.map(i => objMake(i, req.params.id)))
-        .then(() => res.json(arr2))
+app.get('/api/entries/:id', (req, res) => {
+    getterFn()
+        .then(() => {
+            jsondata.map(i => objMake(i, req.params.id))
+            res.json(arr2)
+            res.end()
+        })
         .catch(e => res.status(404).send('The content is being prepared or under maintenance. Try again in a moment.'))
 })
 
