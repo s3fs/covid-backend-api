@@ -1,10 +1,13 @@
 console.log('Initializing...')
 
 const express = require('express')
+const cors = require('cors')
 const axios = require('axios')
 const csv = require('csvtojson')
 const dayjs = require('dayjs')
 const app = express()
+
+app.use(cors())
 
 const url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
 let arr2 = []
